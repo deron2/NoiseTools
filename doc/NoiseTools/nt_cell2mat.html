@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of nt_cell2mat</title>
+  <meta name="keywords" content="nt_cell2mat">
+  <meta name="description" content="y=nt_cell2mat(x) - convert cell matrix of nD matrices to (n+1)D matrix">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NoiseTools</a> &gt; nt_cell2mat.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NoiseTools&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>nt_cell2mat
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>y=nt_cell2mat(x) - convert cell matrix of nD matrices to (n+1)D matrix</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function y=nt_cell2mat(x) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">y=nt_cell2mat(x) - convert cell matrix of nD matrices to (n+1)D matrix
+
+   y: (n+1)-dimension matrix
+
+   x: cell matrix of matrices
+
+ Similar to matlab's cell2mat() but much more flexible.
+
+ If matrices in x are of different dimensions or sizes, the result is
+ based on the largest dimension/size. Maximum ndims is 4.
+
+ The cell matrix x can have ndims up to 4.
+
+ NoiseTools.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="nt_cell2mat.html" class="code" title="function y=nt_cell2mat(x)">nt_cell2mat</a>	y=nt_cell2mat(x) - convert cell matrix of nD matrices to (n+1)D matrix</li><li><a href="nt_greetings.html" class="code" title="function nt_greetings(reset)">nt_greetings</a>	nt_greetings - display message the first time the toolbox is used</li><li><a href="nt_imagescc.html" class="code" title="function nt_imagescc(C)">nt_imagescc</a>	nt_imagescc - plot image with symmetric scaling</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="nt_cell2mat.html" class="code" title="function y=nt_cell2mat(x)">nt_cell2mat</a>	y=nt_cell2mat(x) - convert cell matrix of nD matrices to (n+1)D matrix</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function y=nt_cell2mat(x)</a>
+0002 <span class="comment">%y=nt_cell2mat(x) - convert cell matrix of nD matrices to (n+1)D matrix</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">%   y: (n+1)-dimension matrix</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   x: cell matrix of matrices</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Similar to matlab's cell2mat() but much more flexible.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% If matrices in x are of different dimensions or sizes, the result is</span>
+0011 <span class="comment">% based on the largest dimension/size. Maximum ndims is 4.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% The cell matrix x can have ndims up to 4.</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% NoiseTools.</span>
+0016 <a href="nt_greetings.html" class="code" title="function nt_greetings(reset)">nt_greetings</a>
+0017 
+0018 MAXDIMS=4; <span class="comment">% modify code if more are needed</span>
+0019 
+0020 <span class="keyword">if</span> ~iscell(x); error(<span class="string">'!'</span>); <span class="keyword">end</span>
+0021 
+0022 <span class="comment">% recurse if x is matrix of cells</span>
+0023 <span class="keyword">if</span> min(size(x))&gt;1
+0024     <span class="keyword">if</span> ndims(x)&gt;MAXDIMS; error(<span class="string">'!'</span>); <span class="keyword">end</span>
+0025     sz=size(x);
+0026     yy={};
+0027     <span class="keyword">for</span> k=1:size(x,1)
+0028         yy{k}=<a href="nt_cell2mat.html" class="code" title="function y=nt_cell2mat(x)">nt_cell2mat</a>(x(k,:,:,:)); <span class="comment">% add more colons if needed</span>
+0029     <span class="keyword">end</span>
+0030     y=<a href="nt_cell2mat.html" class="code" title="function y=nt_cell2mat(x)">nt_cell2mat</a>(yy);
+0031     <span class="keyword">return</span>
+0032 <span class="keyword">end</span>
+0033         
+0034 <span class="comment">% find size of largest matrix in cell array</span>
+0035 nd=0;
+0036 <span class="keyword">for</span> iTrial=1:numel(x)
+0037     nd=max(nd,ndims(x{iTrial})); <span class="comment">% find largest number of dimensions</span>
+0038 <span class="keyword">end</span>
+0039 <span class="keyword">if</span> nd&gt;MAXDIMS; error(<span class="string">'!'</span>); <span class="keyword">end</span>
+0040 szs=zeros(1,nd);
+0041 <span class="keyword">for</span> iTrial=1:numel(x)
+0042     tmp=size(x{iTrial});
+0043     szs(1:numel(tmp))=max(szs(1:numel(tmp)),tmp); <span class="comment">% find largest size</span>
+0044 <span class="keyword">end</span>
+0045     
+0046 <span class="comment">% transfer to matrix</span>
+0047 y=zeros([szs,numel(x)]);
+0048 <span class="keyword">for</span> iTrial=1:numel(x)
+0049     sz=size(x{iTrial});
+0050     sz(numel(sz)+1:nd)=1;
+0051     <span class="keyword">if</span> nd==1
+0052         y(1:sz(1),iTrial)=x{iTrial};
+0053     <span class="keyword">elseif</span> nd==2
+0054         y(1:sz(1),1:sz(2),iTrial)=x{iTrial};
+0055     <span class="keyword">elseif</span> nd==3
+0056         y(1:sz(1),1:sz(2),1:sz(3),iTrial)=x{iTrial};
+0057     <span class="keyword">elseif</span> nd==2
+0058         y(1:sz(1),1:sz(2),1:sz(3),1:sz(4),iTrial)=x{iTrial};
+0059     <span class="keyword">end</span> <span class="comment">% add more cases if needed</span>
+0060 <span class="keyword">end</span>
+0061 
+0062 
+0063 <span class="comment">% test code</span>
+0064 <span class="keyword">if</span> 0
+0065     <span class="comment">% basic case: cell array of 2 matrices, same size</span>
+0066     x{1}=randn(10);
+0067     x{2}=randn(10);
+0068     disp(size(<a href="nt_cell2mat.html" class="code" title="function y=nt_cell2mat(x)">nt_cell2mat</a>(x)));
+0069 <span class="keyword">end</span>
+0070 <span class="keyword">if</span> 0
+0071     <span class="comment">% cell array of 2 matrices, different size</span>
+0072     x{1}=randn(10);
+0073     x{2}=randn(20);
+0074     disp(size(<a href="nt_cell2mat.html" class="code" title="function y=nt_cell2mat(x)">nt_cell2mat</a>(x)));
+0075 <span class="keyword">end</span>
+0076 <span class="keyword">if</span> 0
+0077     <span class="comment">% cell array of 2 3-D matrices, same size</span>
+0078     x{1}=randn(10,11,12);
+0079     x{2}=randn(10,11,12);
+0080     disp(size(<a href="nt_cell2mat.html" class="code" title="function y=nt_cell2mat(x)">nt_cell2mat</a>(x)));
+0081 <span class="keyword">end</span>
+0082 <span class="keyword">if</span> 0
+0083     <span class="comment">% cell array with one 2-D matrix and one 3-D matrix</span>
+0084     x{1}=randn(10);
+0085     x{2}=randn(10,11,12);
+0086     disp(size(<a href="nt_cell2mat.html" class="code" title="function y=nt_cell2mat(x)">nt_cell2mat</a>(x)));
+0087 <span class="keyword">end</span>
+0088 <span class="keyword">if</span> 0
+0089     <span class="comment">% cell array of 2 matrices, same size, plot</span>
+0090     x{1}=diag(1:10);
+0091     x{2}=diag(randn(10,1));
+0092     y=<a href="nt_cell2mat.html" class="code" title="function y=nt_cell2mat(x)">nt_cell2mat</a>(x);
+0093     figure(1); clf;
+0094     subplot 221
+0095     <a href="nt_imagescc.html" class="code" title="function nt_imagescc(C)">nt_imagescc</a>(x{1});
+0096     subplot 222
+0097     <a href="nt_imagescc.html" class="code" title="function nt_imagescc(C)">nt_imagescc</a>(x{2});
+0098     subplot 223
+0099     <a href="nt_imagescc.html" class="code" title="function nt_imagescc(C)">nt_imagescc</a>(y(:,:,1));
+0100     subplot 224
+0101     <a href="nt_imagescc.html" class="code" title="function nt_imagescc(C)">nt_imagescc</a>(y(:,:,2));
+0102 <span class="keyword">end</span>
+0103 <span class="keyword">if</span> 0
+0104     <span class="comment">% cell array of 2 matrices, different size, plot</span>
+0105     x{1}=diag(1:10);
+0106     x{2}=diag(randn(20,1));
+0107     y=<a href="nt_cell2mat.html" class="code" title="function y=nt_cell2mat(x)">nt_cell2mat</a>(x);
+0108     figure(1); clf;
+0109     subplot 221
+0110     <a href="nt_imagescc.html" class="code" title="function nt_imagescc(C)">nt_imagescc</a>(x{1});
+0111     subplot 222
+0112     <a href="nt_imagescc.html" class="code" title="function nt_imagescc(C)">nt_imagescc</a>(x{2});
+0113     subplot 223
+0114     <a href="nt_imagescc.html" class="code" title="function nt_imagescc(C)">nt_imagescc</a>(y(:,:,1));
+0115     subplot 224
+0116     <a href="nt_imagescc.html" class="code" title="function nt_imagescc(C)">nt_imagescc</a>(y(:,:,2));
+0117 <span class="keyword">end</span>
+0118 <span class="keyword">if</span> 0
+0119     <span class="comment">% 3-D matrix of 2-D matrices, same size</span>
+0120     x{1,1}=randn(10);
+0121     x{2,1}=randn(10);
+0122     x{1,2}=randn(10);
+0123     x{2,2}=randn(10);
+0124     disp(size(<a href="nt_cell2mat.html" class="code" title="function y=nt_cell2mat(x)">nt_cell2mat</a>(x)));
+0125 <span class="keyword">end</span>
+0126 <span class="keyword">if</span> 0
+0127     <span class="comment">% 3-D matrix of 2-D matrices, various sizes</span>
+0128     x{1,1}=randn(10);
+0129     x{2,1}=randn(11);
+0130     x{1,2}=randn(12);
+0131     x{2,2}=randn(13);
+0132     disp(size(<a href="nt_cell2mat.html" class="code" title="function y=nt_cell2mat(x)">nt_cell2mat</a>(x)));
+0133 <span class="keyword">end</span>
+0134 
+0135</pre></div>
+<hr><address>Generated on Fri 24-Sep-2021 09:54:31 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

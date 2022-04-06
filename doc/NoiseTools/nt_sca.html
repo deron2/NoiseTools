@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of nt_sca</title>
+  <meta name="keywords" content="nt_sca">
+  <meta name="description" content="[M,y]=nt_sca(x,ncomp) - shared component analysis">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NoiseTools</a> &gt; nt_sca.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NoiseTools&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>nt_sca
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>[M,y]=nt_sca(x,ncomp) - shared component analysis</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [M,y,score,proportion]=nt_sca(x,ncomp) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">[M,y]=nt_sca(x,ncomp) - shared component analysis</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="nt_cov.html" class="code" title="function [c,tw]=nt_cov(x,shifts,w);">nt_cov</a>	[c,tw]=nt_cov(x,shifts,w) - time shift covariance</li><li><a href="nt_demean.html" class="code" title="function [x,mn]=nt_demean(x,w)">nt_demean</a>	[y,mn]=nt_demean(x,w) - remove weighted mean over cols</li><li><a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>	[y,norm]=nt_normcol(x,w) - normalize each column so its weighted msq is 1</li><li><a href="nt_pca.html" class="code" title="function [z,idx]=nt_pca(x,shifts,nkeep,threshold,w)">nt_pca</a>	[z,idx]=nt_pca(x,shifts,nkeep,threshold,w) - time-shift pca</li><li><a href="nt_pcarot.html" class="code" title="function [topcs,eigenvalues]=nt_pcarot(cov,nkeep,threshold,N)">nt_pcarot</a>	[topcs,eigenvalues]=pcarot(cov,nkeep,threshold,N) - PCA matrix from covariance</li><li><a href="nt_sca.html" class="code" title="function [M,y,score,proportion]=nt_sca(x,ncomp)">nt_sca</a>	[M,y]=nt_sca(x,ncomp) - shared component analysis</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="nt_sca.html" class="code" title="function [M,y,score,proportion]=nt_sca(x,ncomp)">nt_sca</a>	[M,y]=nt_sca(x,ncomp) - shared component analysis</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [M,y,score,proportion]=nt_sca(x,ncomp)</a>
+0002 <span class="comment">%[M,y]=nt_sca(x,ncomp) - shared component analysis</span>
+0003 
+0004 <span class="keyword">if</span> nargin&lt;1; error(<span class="string">'!'</span>); <span class="keyword">end</span>
+0005 <span class="keyword">if</span> nargin&lt;2 ||isempty(2); ncomp=size(x,2); <span class="keyword">end</span>
+0006 
+0007 <span class="keyword">if</span> iscell(x)
+0008     xx=[];
+0009     <span class="keyword">for</span> iTrial=1:numel(x)
+0010         xx=[xx;x{iTrial}];
+0011     <span class="keyword">end</span>
+0012     x=xx; clear xx;
+0013 <span class="keyword">end</span>
+0014 x=<a href="nt_demean.html" class="code" title="function [x,mn]=nt_demean(x,w)">nt_demean</a>(x);
+0015 
+0016 THRESH=10^-12;
+0017 
+0018 <span class="comment">%{</span>
+0019 Todo: 
+0020 - allow xvalidation
+0021 - operate on covariance matrices
+0022 <span class="comment">%}</span>
+0023 
+0024 T=eye(size(x,2)); <span class="comment">% current transform</span>
+0025 M=eye(size(x,2)); <span class="comment">% result</span>
+0026 C0=<a href="nt_cov.html" class="code" title="function [c,tw]=nt_cov(x,shifts,w);">nt_cov</a>(x); <span class="comment">% initial covariance</span>
+0027 
+0028 score=[];
+0029 <span class="keyword">for</span> iComp=1:ncomp
+0030     C=T'*C0*T; <span class="comment">% current covariance</span>
+0031     N=diag(1./sqrt(diag(C))); <span class="comment">% normalizing matrix</span>
+0032     N(find(isnan(N)))=0;
+0033     C=N'*C*N; <span class="comment">% normalize current covariance</span>
+0034     [topcs,ev]=<a href="nt_pcarot.html" class="code" title="function [topcs,eigenvalues]=nt_pcarot(cov,nkeep,threshold,N)">nt_pcarot</a>(C); <span class="comment">% PCA</span>
+0035     frompcs=pinv(topcs);
+0036     M(:,iComp)=T*N*topcs(:,1); <span class="comment">% keep first PC</span>
+0037     T=T*N*(topcs(:,2:end)*frompcs(2:<span class="keyword">end</span>,:)); <span class="comment">% project out first PC</span>
+0038     score(iComp)=ev(1);
+0039 <span class="keyword">end</span>
+0040 
+0041 <span class="keyword">if</span> ncomp&lt;size(x,2) 
+0042     <span class="comment">% fill rest of transform matrix with leftover (unprocessed) dimensions</span>
+0043     C=T'*C0*T; <span class="comment">% current covariance</span>
+0044     N=diag(1./sqrt(diag(C))); <span class="comment">% normalizing matrix</span>
+0045     N(find(isnan(N)))=0;
+0046     C=N'*C*N; <span class="comment">% normalize current covariance</span>
+0047     topcs=<a href="nt_pcarot.html" class="code" title="function [topcs,eigenvalues]=nt_pcarot(cov,nkeep,threshold,N)">nt_pcarot</a>(C); <span class="comment">% PCA</span>
+0048     T=T*topcs;
+0049     M(:,ncomp+1:end)=T(:,1:(size(x,2)-ncomp));
+0050 <span class="keyword">end</span>
+0051 
+0052 prop=diag(M'*C*M);
+0053 
+0054 <span class="comment">%figure(1); clf; plot(prop); pause</span>
+0055 
+0056 <span class="keyword">if</span> nargout&gt;1; y=x*M; <span class="keyword">end</span>
+0057 
+0058 <span class="comment">% test code</span>
+0059 <span class="keyword">if</span> 0
+0060     x=randn(1000,10);
+0061     [M,y]=<a href="nt_sca.html" class="code" title="function [M,y,score,proportion]=nt_sca(x,ncomp)">nt_sca</a>(x);
+0062 <span class="keyword">end</span>
+0063 
+0064 <span class="keyword">if</span> 0
+0065     <span class="comment">% data are 11 chan:</span>
+0066     <span class="comment">% 10 chan share same source (sine),</span>
+0067     <span class="comment">% 1 chan is different source (noise) with higher variance</span>
+0068     x=randn(1000,10);
+0069     s=sin(2*pi*(1:1000)'/1000);
+0070     x=bsxfun(@plus,x,s); <span class="comment">% add same to all</span>
+0071     x=[x,10*randn(1000,1)]; <span class="comment">% extra channel with large variance</span>
+0072     <span class="comment">%[y,M,score]=nt_sca_old(x);</span>
+0073     MM=<a href="nt_sca.html" class="code" title="function [M,y,score,proportion]=nt_sca(x,ncomp)">nt_sca</a>(x); y=x*MM;
+0074     yy=<a href="nt_pca.html" class="code" title="function [z,idx]=nt_pca(x,shifts,nkeep,threshold,w)">nt_pca</a>(x);
+0075     figure(1); clf;  plot(<a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>(s)'*<a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>(y)/size(s,1)); 
+0076     hold on; plot(<a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>(s)'*<a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>(yy)/size(s,1));    legend(<span class="string">'sca'</span>,<span class="string">'pca'</span>);
+0077 <span class="keyword">end</span>
+0078 
+0079 
+0080 <span class="keyword">if</span> 0
+0081     <span class="comment">% two shared sources</span>
+0082     x=randn(1000,10);
+0083     s=sin(2*pi*(1:1000)'/1000);
+0084     s2=sin(2*pi*2*(1:1000)'/1000);
+0085     x=x+s*rand(1,10); <span class="comment">% add same to all</span>
+0086     x=x+s2*rand(1,10); <span class="comment">% add same to all</span>
+0087     x=[x,10*randn(1000,3)]; <span class="comment">% extra channel with large variance</span>
+0088     <span class="comment">%[y,M,score]=nt_sca_old(x);</span>
+0089     MM=<a href="nt_sca.html" class="code" title="function [M,y,score,proportion]=nt_sca(x,ncomp)">nt_sca</a>(x); yyy=x*MM;
+0090     yy=<a href="nt_pca.html" class="code" title="function [z,idx]=nt_pca(x,shifts,nkeep,threshold,w)">nt_pca</a>(x);
+0091     figure(1); clf; 
+0092     subplot 121; <span class="comment">%bar(abs(nt_normcol(s)'*nt_normcol(y)/size(s,1)));</span>
+0093     hold on; bar(abs(<a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>(s)'*<a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>(yyy)/size(s,1))); 
+0094     hold on; bar(abs(<a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>(s)'*<a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>(yy)/size(s,1)));    legend(<span class="string">'sca'</span>,<span class="string">'pca'</span>); title(<span class="string">'source 1'</span>);
+0095     subplot 122; <span class="comment">%bar(abs(nt_normcol(s2)'*nt_normcol(y)/size(s,1)));</span>
+0096     hold on;bar(abs(<a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>(s2)'*<a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>(yyy)/size(s,1))); 
+0097     hold on; bar(abs(<a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>(s2)'*<a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>(yy)/size(s,1)));    legend(<span class="string">'sca'</span>,<span class="string">'pca'</span>); title(<span class="string">'source 2'</span>);
+0098 <span class="keyword">end</span>
+0099     
+0100</pre></div>
+<hr><address>Generated on Fri 24-Sep-2021 09:54:31 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

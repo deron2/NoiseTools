@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of nt_eyeblink</title>
+  <meta name="keywords" content="nt_eyeblink">
+  <meta name="description" content="[y,z,mask]=nt_eyeblink(x,eyechans,nremove) - project out eyeblinks">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NoiseTools</a> &gt; nt_eyeblink.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NoiseTools&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>nt_eyeblink
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>[y,z,mask]=nt_eyeblink(x,eyechans,nremove) - project out eyeblinks</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [y,z,mask]=nt_eyeblink(x,eyechans,nremove,sr) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">[y,z,mask]=nt_eyeblink(x,eyechans,nremove) - project out eyeblinks
+
+  y: clean data
+  z: eyeblink components
+  mask: mask used to weight eyeblink intervals
+
+  x: data to clean (time X channels)
+  eyechans: ocular channel numbers, or eog signals
+  nremove: number of components to remove
+
+ NoiseTools</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="nt_cov.html" class="code" title="function [c,tw]=nt_cov(x,shifts,w);">nt_cov</a>	[c,tw]=nt_cov(x,shifts,w) - time shift covariance</li><li><a href="nt_demean.html" class="code" title="function [x,mn]=nt_demean(x,w)">nt_demean</a>	[y,mn]=nt_demean(x,w) - remove weighted mean over cols</li><li><a href="nt_detrend.html" class="code" title="function [y,w,r]=nt_detrend(x,order,w0,basis,thresh,niter,wsize)">nt_detrend</a>	[y,w,r]=nt_detrend(x,order,w,basis,thresh,niter,wsize) - robustly remove trend</li><li><a href="nt_dss0.html" class="code" title="function [todss,pwr0,pwr1]=nt_dss0(c0,c1,keep1,keep2)">nt_dss0</a>	[todss,pwr1,pwr2]=nt_dss0(c0,c1,keep1,keep2) - dss from covariance</li><li><a href="nt_eyeblink.html" class="code" title="function [y,z,mask]=nt_eyeblink(x,eyechans,nremove,sr)">nt_eyeblink</a>	[y,z,mask]=nt_eyeblink(x,eyechans,nremove) - project out eyeblinks</li><li><a href="nt_greetings.html" class="code" title="function nt_greetings(reset)">nt_greetings</a>	nt_greetings - display message the first time the toolbox is used</li><li><a href="nt_mmat.html" class="code" title="function y=nt_mmat(x,m)">nt_mmat</a>	y=nt_mmat(x,m) -  matrix multiplication (with convolution)</li><li><a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>	[y,norm]=nt_normcol(x,w) - normalize each column so its weighted msq is 1</li><li><a href="nt_pca0.html" class="code" title="function [topcs,pwr,y]=nt_pca0(x,shifts,nkeep,threshold,w)">nt_pca0</a>	[topcs,pwr,y]=nt_pca0(x,shifts,nkeep,threshold,w) - time-shift pca</li><li><a href="nt_tsr.html" class="code" title="function [y,idx,w]=nt_tsr(x,ref,shifts,wx,wref,keep,thresh)">nt_tsr</a>	[y,idx,w]=nt_tsr(x,ref,shifts,wx,wref,keep,thresh) - time-shift regression (TSPCA)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="nt_eyeblink.html" class="code" title="function [y,z,mask]=nt_eyeblink(x,eyechans,nremove,sr)">nt_eyeblink</a>	[y,z,mask]=nt_eyeblink(x,eyechans,nremove) - project out eyeblinks</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [y,z,mask]=nt_eyeblink(x,eyechans,nremove,sr)</a>
+0002 <span class="comment">%[y,z,mask]=nt_eyeblink(x,eyechans,nremove) - project out eyeblinks</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">%  y: clean data</span>
+0005 <span class="comment">%  z: eyeblink components</span>
+0006 <span class="comment">%  mask: mask used to weight eyeblink intervals</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%  x: data to clean (time X channels)</span>
+0009 <span class="comment">%  eyechans: ocular channel numbers, or eog signals</span>
+0010 <span class="comment">%  nremove: number of components to remove</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% NoiseTools</span>
+0013 <a href="nt_greetings.html" class="code" title="function nt_greetings(reset)">nt_greetings</a>;
+0014 
+0015 <span class="keyword">if</span> nargin&lt;2; error(<span class="string">'!'</span>); <span class="keyword">end</span>
+0016 <span class="keyword">if</span> nargin&lt;3||isempty(nremove); nremove=1; <span class="keyword">end</span>
+0017 <span class="keyword">if</span> nargin&lt;4; sr=[]; <span class="keyword">end</span>
+0018 
+0019 <span class="keyword">if</span> nargout==0
+0020     <span class="comment">% plot results</span>
+0021     [y,z,mask]=<a href="nt_eyeblink.html" class="code" title="function [y,z,mask]=nt_eyeblink(x,eyechans,nremove,sr)">nt_eyeblink</a>(x,eyechans,nremove,sr);
+0022     figure(201); clf;
+0023     subplot 211; plot(x); title(<span class="string">'raw'</span>);
+0024     subplot 212; plot(y); title(<span class="string">'clean'</span>);
+0025     figure(202); clf;
+0026     subplot 211; plot(mask); title(<span class="string">'mask'</span>);
+0027     subplot 212; plot(z(:,1:3)); title(<span class="string">'eyeblink components 1:3'</span>);
+0028     disp(size(z)); 
+0029     disp(size(kurtosis(z)));
+0030     figure(203); clf;
+0031     plot(kurtosis(z));
+0032     drawnow
+0033     clear y z mask
+0034 <span class="keyword">end</span>
+0035 
+0036 <span class="keyword">if</span> size(eyechans,1) ~= size(x,1)
+0037     <span class="comment">% interpret as channel numbers</span>
+0038     eyechans=x(:,eyechans);
+0039     <span class="keyword">if</span> isempty(sr); error (<span class="string">'!'</span>); <span class="keyword">end</span>
+0040 <span class="keyword">end</span>
+0041 
+0042 <span class="comment">% demean, detrend, highpass eyechans to emphasize blinks</span>
+0043 eyechans=<a href="nt_demean.html" class="code" title="function [x,mn]=nt_demean(x,w)">nt_demean</a>(eyechans);
+0044 ORDER=1;
+0045 eyechans=<a href="nt_detrend.html" class="code" title="function [y,w,r]=nt_detrend(x,order,w0,basis,thresh,niter,wsize)">nt_detrend</a>(eyechans,ORDER);
+0046 <span class="keyword">if</span> sr
+0047     HPF=1;
+0048     [b,a]=butter(2,HPF/(sr/2),<span class="string">'high'</span>);
+0049     eyechans=filtfilt(b,a,eyechans);
+0050 <span class="keyword">end</span>
+0051 eyechans=<a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>(eyechans);
+0052 
+0053 <span class="comment">% PCA to merge across eye channels</span>
+0054 topcs=<a href="nt_pca0.html" class="code" title="function [topcs,pwr,y]=nt_pca0(x,shifts,nkeep,threshold,w)">nt_pca0</a>(<a href="nt_normcol.html" class="code" title="function [y,norm]=nt_normcol(x,w)">nt_normcol</a>(eyechans));
+0055 eyechans=eyechans*topcs(:,1);
+0056 
+0057 <span class="comment">% mask to emphasize eyeblink intervals</span>
+0058 mask=mean(eyechans.^2,2);
+0059 quantile=.8;
+0060 tmp=sort(mask);
+0061 mask=min(mask,tmp(round(size(mask,1)*quantile))); <span class="comment">% avoid extreme weight</span>
+0062 
+0063 <span class="comment">% DSS to emphasize eyeblink components</span>
+0064 topcs=<a href="nt_pca0.html" class="code" title="function [topcs,pwr,y]=nt_pca0(x,shifts,nkeep,threshold,w)">nt_pca0</a>(x);
+0065 xx=x*topcs(:,1:min(10,size(x,2)));
+0066 c0=<a href="nt_cov.html" class="code" title="function [c,tw]=nt_cov(x,shifts,w);">nt_cov</a>(xx);
+0067 c1=<a href="nt_cov.html" class="code" title="function [c,tw]=nt_cov(x,shifts,w);">nt_cov</a>(<a href="nt_demean.html" class="code" title="function [x,mn]=nt_demean(x,w)">nt_demean</a>(bsxfun(@times,xx,mask)));
+0068 [todss,pwr0,pwr1]=<a href="nt_dss0.html" class="code" title="function [todss,pwr0,pwr1]=nt_dss0(c0,c1,keep1,keep2)">nt_dss0</a>(c0,c1); 
+0069 <span class="comment">%figure(99); clf; plot(pwr1./pwr0,'.-'); title('nt_eyeblink'); ylabel('score'); xlabel('component');</span>
+0070 z=<a href="nt_mmat.html" class="code" title="function y=nt_mmat(x,m)">nt_mmat</a>(xx,todss(:,1:nremove));
+0071 
+0072 <span class="comment">% figure(10); clf; subplot 211; plot(eyechans);</span>
+0073 <span class="comment">% subplot 212; plot(z);</span>
+0074 <span class="comment">% pause</span>
+0075 
+0076 y=<a href="nt_tsr.html" class="code" title="function [y,idx,w]=nt_tsr(x,ref,shifts,wx,wref,keep,thresh)">nt_tsr</a>(x,z);
+0077 
+0078 <span class="comment">% figure(11); clf; subplot 211; plot(x);</span>
+0079 <span class="comment">% subplot 212; plot(nt_tsr(x,y));</span>
+0080 <span class="comment">% pause</span>
+0081 
+0082 
+0083 
+0084 
+0085 
+0086 
+0087 
+0088 
+0089</pre></div>
+<hr><address>Generated on Fri 24-Sep-2021 09:54:31 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

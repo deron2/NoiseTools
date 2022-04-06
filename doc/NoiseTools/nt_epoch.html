@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of nt_epoch</title>
+  <meta name="keywords" content="nt_epoch">
+  <meta name="description" content="y=nt_epochify(x,idx,bounds) - extract epochs based on trigger indices">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NoiseTools</a> &gt; nt_epoch.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NoiseTools&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>nt_epoch
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>y=nt_epochify(x,idx,bounds) - extract epochs based on trigger indices</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function y=nt_epochify(x,idx,bounds) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">y=nt_epochify(x,idx,bounds) - extract epochs based on trigger indices
+
+  y: 3D array of epoched data (time*channels*trials)
+
+  x: raw data (time*channels)
+  idx: array of trigger indices (can be fractionary)
+  bounds: (samples) start and stop of epoch
+  
+  Space indices at intervals of epochsize (can be fractionary):
+       y=nt_epochify(x,[],epochsize);
+  
+  NoiseTools.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="nt_fold.html" class="code" title="function x=fold(x,N)">nt_fold</a>	y=fold(x,epochsize) - fold 2D to 3D</li><li><a href="nt_greetings.html" class="code" title="function nt_greetings(reset)">nt_greetings</a>	nt_greetings - display message the first time the toolbox is used</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function y=nt_epochify(x,idx,bounds)</a>
+0002 <span class="comment">%y=nt_epochify(x,idx,bounds) - extract epochs based on trigger indices</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">%  y: 3D array of epoched data (time*channels*trials)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%  x: raw data (time*channels)</span>
+0007 <span class="comment">%  idx: array of trigger indices (can be fractionary)</span>
+0008 <span class="comment">%  bounds: (samples) start and stop of epoch</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%  Space indices at intervals of epochsize (can be fractionary):</span>
+0011 <span class="comment">%       y=nt_epochify(x,[],epochsize);</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%  NoiseTools.</span>
+0014 <a href="nt_greetings.html" class="code" title="function nt_greetings(reset)">nt_greetings</a>;
+0015 
+0016 <span class="keyword">if</span> nargin&lt;3; error(<span class="string">'!'</span>); <span class="keyword">end</span>
+0017 <span class="keyword">if</span> isempty(idx)
+0018     <span class="comment">% space indices at regular intervals of epoch size</span>
+0019     <span class="keyword">if</span> numel(bounds)&gt;1; error(<span class="string">'!'</span>); <span class="keyword">end</span>
+0020     idx=1 : bounds : size(x,1)-bounds;
+0021     bounds=ceil(bounds);
+0022 <span class="keyword">end</span>
+0023 <span class="keyword">if</span> numel(bounds)==1 <span class="comment">% align epoch start with index</span>
+0024     bounds=[0 bounds]; 
+0025 <span class="keyword">end</span>
+0026 
+0027 <span class="comment">% check that indices fit, discard those that don't</span>
+0028 idx=idx(:); 
+0029 lowestIdx=-bounds(1); <span class="comment">% lowest</span>
+0030 highestIdx=size(x,1)-bounds(2); 
+0031 <span class="keyword">if</span> max(idx)&gt;highestIdx
+0032     warning(num2str(numel(idx&gt;highestIdx)));
+0033       disp(<span class="string">'indices beyond end of data'</span>);
+0034     idx=idx(idx&lt;=highestIdx);
+0035 <span class="keyword">end</span>
+0036 <span class="keyword">if</span> min(idx)&lt;lowestIdx
+0037     warning(num2str(numel(idx&lt;lowestIdx)));
+0038       disp(<span class="string">'indices beyond end of data'</span>);
+0039     idx=idx(idx&gt;=lowestIdx);
+0040 <span class="keyword">end</span>
+0041   
+0042 <span class="comment">% split data into trials</span>
+0043 nsamples=bounds(2)-bounds(1)+1;
+0044 <span class="keyword">if</span> idx == round(idx)
+0045     <span class="comment">% integer positions</span>
+0046     y=zeros(nsamples, size(x,2), numel(idx));
+0047     <span class="keyword">for</span> k=1:numel(idx);
+0048         y(:,:,k)=x(tidx(k)+(bounds(1):bounds(2)),:);
+0049     <span class="keyword">end</span>
+0050 <span class="keyword">else</span>
+0051     <span class="comment">% fractionnary positions</span>
+0052     warning(<span class="string">'noninteger indices, using interpolation'</span>); 
+0053     sidx=repmat(idx, [1,nsamples]) + repmat((1:nsamples),[numel(idx,1),1]); 
+0054     sidx=sidx(:);
+0055     yy=interp1(1:size(x,1),x,sidx+bounds(1));
+0056     y=<a href="nt_fold.html" class="code" title="function x=fold(x,N)">nt_fold</a>(yy,bounds(2)-bounds(1)+1);
+0057 <span class="keyword">end</span>
+0058</pre></div>
+<hr><address>Generated on Fri 24-Sep-2021 09:54:31 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

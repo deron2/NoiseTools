@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of nt_subspace_prune6</title>
+  <meta name="keywords" content="nt_subspace_prune6">
+  <meta name="description" content="[Y]=nt_subspace_prune6(X,npass,thresh) - local cleaning matrices">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NoiseTools</a> &gt; nt_subspace_prune6.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NoiseTools&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>nt_subspace_prune6
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>[Y]=nt_subspace_prune6(X,npass,thresh) - local cleaning matrices</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [Y,scores,removed]=nt_subspace_prune6(X,npass,thresh,tol) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">[Y]=nt_subspace_prune6(X,npass,thresh) - local cleaning matrices
+
+  Y: denoised data
+  
+  X: data to denoise (nsamples X nchans X ntrials matrix or array of 2D matrices)
+  npass: number of passes [default: 10]
+  thresh: threshold power ratio between segment &amp; all [default: 10]
+  tol: tolerance factor to speed up calculation [default: 0.5]</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="nt_cov.html" class="code" title="function [c,tw]=nt_cov(x,shifts,w);">nt_cov</a>	[c,tw]=nt_cov(x,shifts,w) - time shift covariance</li><li><a href="nt_demean2.html" class="code" title="function x=nt_demean2(x,w)">nt_demean2</a>	y=nt_demean2(x,w) - remove mean of each row and page</li><li><a href="nt_dss0.html" class="code" title="function [todss,pwr0,pwr1]=nt_dss0(c0,c1,keep1,keep2)">nt_dss0</a>	[todss,pwr1,pwr2]=nt_dss0(c0,c1,keep1,keep2) - dss from covariance</li><li><a href="nt_imagescc.html" class="code" title="function nt_imagescc(C)">nt_imagescc</a>	nt_imagescc - plot image with symmetric scaling</li><li><a href="nt_mmat.html" class="code" title="function y=nt_mmat(x,m)">nt_mmat</a>	y=nt_mmat(x,m) -  matrix multiplication (with convolution)</li><li><a href="nt_subspace_prune6.html" class="code" title="function [Y,scores,removed]=nt_subspace_prune6(X,npass,thresh,tol)">nt_subspace_prune6</a>	[Y]=nt_subspace_prune6(X,npass,thresh) - local cleaning matrices</li><li><a href="nt_wpwr.html" class="code" title="function [y,tw]=nt_wpwr(x,w)">nt_wpwr</a>	[y,tweight]=nt_wpwr(x,w) - weighted power</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="nt_subspace_prune6.html" class="code" title="function [Y,scores,removed]=nt_subspace_prune6(X,npass,thresh,tol)">nt_subspace_prune6</a>	[Y]=nt_subspace_prune6(X,npass,thresh) - local cleaning matrices</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Y,scores,removed]=nt_subspace_prune6(X,npass,thresh,tol)</a>
+0002 <span class="comment">%[Y]=nt_subspace_prune6(X,npass,thresh) - local cleaning matrices</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">%  Y: denoised data</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%  X: data to denoise (nsamples X nchans X ntrials matrix or array of 2D matrices)</span>
+0007 <span class="comment">%  npass: number of passes [default: 10]</span>
+0008 <span class="comment">%  thresh: threshold power ratio between segment &amp; all [default: 10]</span>
+0009 <span class="comment">%  tol: tolerance factor to speed up calculation [default: 0.5]</span>
+0010 
+0011 <span class="keyword">if</span> nargin&lt;2||isempty(npass); npass=10; <span class="keyword">end</span>
+0012 <span class="keyword">if</span> nargin&lt;3||isempty(thresh); thresh=10; <span class="keyword">end</span>
+0013 <span class="keyword">if</span> nargin&lt;4||isempty(tol); tol=0.5; <span class="keyword">end</span>
+0014 
+0015 <span class="keyword">if</span> isnumeric(X)
+0016     <span class="comment">% transfer 3D matrix to array of 2D</span>
+0017     <span class="keyword">if</span> ndims(X)&lt;3; error(<span class="string">'!'</span>); <span class="keyword">end</span>
+0018     tmp={};
+0019     <span class="keyword">for</span> iTrial=1:size(X,3); 
+0020         tmp{iTrial}=X(:,:,iTrial); 
+0021     <span class="keyword">end</span>
+0022     X=tmp;
+0023     
+0024     <span class="comment">% process</span>
+0025     [Y,scores,removed]=<a href="nt_subspace_prune6.html" class="code" title="function [Y,scores,removed]=nt_subspace_prune6(X,npass,thresh,tol)">nt_subspace_prune6</a>(X,npass,thresh,tol);
+0026         disp(<a href="nt_wpwr.html" class="code" title="function [y,tw]=nt_wpwr(x,w)">nt_wpwr</a>(Y)/<a href="nt_wpwr.html" class="code" title="function [y,tw]=nt_wpwr(x,w)">nt_wpwr</a>(X));
+0027     
+0028     <span class="comment">% transfer back to 3D matrix</span>
+0029     tmp=zeros(size(Y{1},1),size(Y{1},2),numel(Y));
+0030     tmp2=zeros(size(Y{1},1),size(removed{1},2),numel(Y));
+0031     <span class="keyword">for</span> iTrial=1:numel(X) 
+0032         tmp(:,:,iTrial)=Y{iTrial}; 
+0033         tmp2(:,:,iTrial)=removed{iTrial}; 
+0034     <span class="keyword">end</span>
+0035     Y=tmp;
+0036     removed=tmp2;
+0037     <span class="keyword">return</span>
+0038 <span class="keyword">end</span>
+0039 
+0040 ntrials=numel(X);
+0041 nchans=size(X{1},2);
+0042 [C00,tw]=<a href="nt_cov.html" class="code" title="function [c,tw]=nt_cov(x,shifts,w);">nt_cov</a>(X);
+0043 C00=C00/tw;
+0044 
+0045 <span class="comment">% matrix array to save removed component/trials</span>
+0046 removed={};
+0047 <span class="keyword">for</span> iTrial=1:ntrials
+0048     removed{iTrial}=zeros(size(X{iTrial},1),npass);
+0049 <span class="keyword">end</span>
+0050 
+0051 original_power=<a href="nt_wpwr.html" class="code" title="function [y,tw]=nt_wpwr(x,w)">nt_wpwr</a>(X);
+0052 scores=[]; D=[];
+0053 <span class="keyword">for</span> iPass=1:npass
+0054     
+0055     X=<a href="nt_demean2.html" class="code" title="function x=nt_demean2(x,w)">nt_demean2</a>(X);
+0056     
+0057 <span class="comment">%     for k=1:ntrials</span>
+0058 <span class="comment">%         X{k}=X{k}/sqrt(mean(X{k}(:).^2));</span>
+0059 <span class="comment">%     end</span>
+0060     
+0061     <span class="comment">% covariance of full data</span>
+0062     [C0,tw]=<a href="nt_cov.html" class="code" title="function [c,tw]=nt_cov(x,shifts,w);">nt_cov</a>(X); 
+0063     C0=C0/tw;
+0064     
+0065     <span class="comment">% mix with original estimate</span>
+0066     alpha=0.01;
+0067     C0=alpha*C00+(1-alpha)*C0;
+0068     
+0069     <span class="comment">% find most excentric trial</span>
+0070     iBest=0; best_score=0; 
+0071     CC1=zeros(nchans,nchans,ntrials);
+0072     <span class="keyword">for</span> iTrial=1:numel(X)
+0073         a=X{iTrial};
+0074         <span class="comment">% covariance of this trial</span>
+0075         C1=<a href="nt_cov.html" class="code" title="function [c,tw]=nt_cov(x,shifts,w);">nt_cov</a>(a)/size(a,1);       
+0076         <span class="comment">% contrast this trial with rest</span>
+0077         [todss,pwr0,pwr1]=<a href="nt_dss0.html" class="code" title="function [todss,pwr0,pwr1]=nt_dss0(c0,c1,keep1,keep2)">nt_dss0</a>(C0,C1,[],0);
+0078         <span class="comment">% is this trial the most excentric?</span>
+0079         <span class="keyword">if</span> pwr1(1)/pwr0(1)&gt;best_score
+0080             iBest=iTrial;
+0081             best_score=pwr1(1)/pwr0(1);
+0082         <span class="keyword">end</span>
+0083         scores(iPass,iTrial)=pwr1(1)/pwr0(1);
+0084         <span class="keyword">if</span> pwr1(1)&lt;pwr0(1);
+0085             figure(1); clf; plot([pwr1', pwr0']); pause
+0086         <span class="keyword">end</span>
+0087     <span class="keyword">end</span>
+0088     
+0089     <span class="comment">% remove most excentric component of most excentric trials</span>
+0090     <span class="keyword">if</span> best_score&gt;thresh
+0091         
+0092         <span class="comment">% find other trials for which this component is large</span>
+0093         a=X(iBest);
+0094         C1=<a href="nt_cov.html" class="code" title="function [c,tw]=nt_cov(x,shifts,w);">nt_cov</a>(a)/(size(a,1)*size(a,3));
+0095         [todss,pwr0,pwr1]=<a href="nt_dss0.html" class="code" title="function [todss,pwr0,pwr1]=nt_dss0(c0,c1,keep1,keep2)">nt_dss0</a>(C0,C1,[],0);
+0096         z=<a href="nt_mmat.html" class="code" title="function y=nt_mmat(x,m)">nt_mmat</a>(X,todss(:,1));
+0097         <span class="keyword">for</span> k=1:ntrials
+0098             p(k)=mean(z{k}.^2);
+0099         <span class="keyword">end</span>
+0100         p=p/mean(p);
+0101         iRemove=find(p&gt;1/tol);
+0102         
+0103         <span class="comment">%disp(numel(iRemove))</span>
+0104         
+0105         <span class="comment">% update DSS to fit all trials to be removed</span>
+0106         a=X(iRemove);
+0107         C1=<a href="nt_cov.html" class="code" title="function [c,tw]=nt_cov(x,shifts,w);">nt_cov</a>(a)/(size(a,1)*size(a,3));
+0108         [todss,pwr0,pwr1]=<a href="nt_dss0.html" class="code" title="function [todss,pwr0,pwr1]=nt_dss0(c0,c1,keep1,keep2)">nt_dss0</a>(C0,C1,[],0);
+0109         fromdss=pinv(todss);
+0110         
+0111         D=todss(:,2:end)*fromdss(2:<span class="keyword">end</span>,:);
+0112         X0=X;
+0113         X(iRemove)=<a href="nt_mmat.html" class="code" title="function y=nt_mmat(x,m)">nt_mmat</a>(X(iRemove),D);
+0114                 
+0115         <span class="keyword">for</span> k=iRemove
+0116             removed{k}(:,iPass)=<a href="nt_mmat.html" class="code" title="function y=nt_mmat(x,m)">nt_mmat</a>(X{k},todss(:,1));
+0117         <span class="keyword">end</span>
+0118     <span class="keyword">else</span>
+0119         <span class="keyword">break</span>;
+0120     <span class="keyword">end</span>
+0121 
+0122     <span class="keyword">if</span> ~isreal(scores); <span class="keyword">return</span>; <span class="keyword">end</span>
+0123     
+0124     figure(10); clf; <a href="nt_imagescc.html" class="code" title="function nt_imagescc(C)">nt_imagescc</a>(scores); colorbar;
+0125     <span class="comment">%disp(nt_wpwr(X)/original_power);</span>
+0126 <span class="keyword">end</span>
+0127 
+0128 <span class="keyword">for</span> iTrial=1:ntrials
+0129     removed{iTrial}=removed{iTrial}(:,1:iPass);
+0130 <span class="keyword">end</span>
+0131     
+0132 Y=X;</pre></div>
+<hr><address>Generated on Fri 24-Sep-2021 09:54:31 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

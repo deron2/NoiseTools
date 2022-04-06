@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of nt_subspace_prune5</title>
+  <meta name="keywords" content="nt_subspace_prune5">
+  <meta name="description" content="[Y]=nt_subspace_prune(X,npass,thresh) - local cleaning matrices">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NoiseTools</a> &gt; nt_subspace_prune5.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NoiseTools&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>nt_subspace_prune5
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>[Y]=nt_subspace_prune(X,npass,thresh) - local cleaning matrices</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [Y,scores]=nt_subspace_prune5(X,npass,thresh) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">[Y]=nt_subspace_prune(X,npass,thresh) - local cleaning matrices
+
+  Y: denoised data
+  
+  X: data to denoise (nsamples X nchans X ntrials)
+  npass: number of passes [default: 1]
+  thresh: threshold power ratio between segment &amp; all [default: 10]</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="nt_cov.html" class="code" title="function [c,tw]=nt_cov(x,shifts,w);">nt_cov</a>	[c,tw]=nt_cov(x,shifts,w) - time shift covariance</li><li><a href="nt_demean2.html" class="code" title="function x=nt_demean2(x,w)">nt_demean2</a>	y=nt_demean2(x,w) - remove mean of each row and page</li><li><a href="nt_dss0.html" class="code" title="function [todss,pwr0,pwr1]=nt_dss0(c0,c1,keep1,keep2)">nt_dss0</a>	[todss,pwr1,pwr2]=nt_dss0(c0,c1,keep1,keep2) - dss from covariance</li><li><a href="nt_imagescc.html" class="code" title="function nt_imagescc(C)">nt_imagescc</a>	nt_imagescc - plot image with symmetric scaling</li><li><a href="nt_mmat.html" class="code" title="function y=nt_mmat(x,m)">nt_mmat</a>	y=nt_mmat(x,m) -  matrix multiplication (with convolution)</li><li><a href="nt_subspace_prune5.html" class="code" title="function [Y,scores]=nt_subspace_prune5(X,npass,thresh)">nt_subspace_prune5</a>	[Y]=nt_subspace_prune(X,npass,thresh) - local cleaning matrices</li><li><a href="nt_wpwr.html" class="code" title="function [y,tw]=nt_wpwr(x,w)">nt_wpwr</a>	[y,tweight]=nt_wpwr(x,w) - weighted power</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="nt_subspace_prune5.html" class="code" title="function [Y,scores]=nt_subspace_prune5(X,npass,thresh)">nt_subspace_prune5</a>	[Y]=nt_subspace_prune(X,npass,thresh) - local cleaning matrices</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Y,scores]=nt_subspace_prune5(X,npass,thresh)</a>
+0002 <span class="comment">%[Y]=nt_subspace_prune(X,npass,thresh) - local cleaning matrices</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">%  Y: denoised data</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%  X: data to denoise (nsamples X nchans X ntrials)</span>
+0007 <span class="comment">%  npass: number of passes [default: 1]</span>
+0008 <span class="comment">%  thresh: threshold power ratio between segment &amp; all [default: 10]</span>
+0009 
+0010 <span class="keyword">if</span> nargin&lt;2||isempty(npass); npass=1; <span class="keyword">end</span>
+0011 <span class="keyword">if</span> nargin&lt;3||isempty(thresh); thresh=1; <span class="keyword">end</span>
+0012 
+0013 <span class="keyword">if</span> isnumeric(X)
+0014     <span class="keyword">if</span> ndims(X)&lt;3; error(<span class="string">'!'</span>); <span class="keyword">end</span>
+0015     tmp={};
+0016     <span class="keyword">for</span> iTrial=1:size(X,3); 
+0017         tmp{iTrial}=X(:,:,iTrial); 
+0018     <span class="keyword">end</span>
+0019     X=tmp;
+0020     [Y,scores]=<a href="nt_subspace_prune5.html" class="code" title="function [Y,scores]=nt_subspace_prune5(X,npass,thresh)">nt_subspace_prune5</a>(X,npass,thresh);
+0021     tmp=zeros(size(Y{1},1),size(Y{2},2),numel(Y));
+0022     <span class="keyword">for</span> iTrial=1:numel(X) 
+0023         tmp(:,:,iTrial)=Y{iTrial}; 
+0024     <span class="keyword">end</span>
+0025     Y=tmp;
+0026     <span class="keyword">return</span>
+0027 <span class="keyword">end</span>
+0028 
+0029 ntrials=numel(X);
+0030 nchans=size(X{1},2);
+0031 
+0032 original_power=<a href="nt_wpwr.html" class="code" title="function [y,tw]=nt_wpwr(x,w)">nt_wpwr</a>(X);
+0033 scores=[]; D=[];
+0034 <span class="keyword">for</span> iPass=1:npass
+0035     
+0036     X=<a href="nt_demean2.html" class="code" title="function x=nt_demean2(x,w)">nt_demean2</a>(X);
+0037     
+0038     <span class="comment">% covariance of full data</span>
+0039     [C0,tw]=<a href="nt_cov.html" class="code" title="function [c,tw]=nt_cov(x,shifts,w);">nt_cov</a>(X); 
+0040     C0=C0/tw;
+0041     
+0042     iBest=0; best_score=0; 
+0043     CC1=zeros(nchans,nchans,ntrials);
+0044     <span class="keyword">for</span> iTrial=1:numel(X)
+0045         a=X{iTrial};
+0046         
+0047         <span class="comment">% covariance of this trial</span>
+0048         C1=<a href="nt_cov.html" class="code" title="function [c,tw]=nt_cov(x,shifts,w);">nt_cov</a>(a)/size(a,1);
+0049         
+0050         <span class="comment">% contrast this trial with rest</span>
+0051         [todss,pwr0,pwr1]=<a href="nt_dss0.html" class="code" title="function [todss,pwr0,pwr1]=nt_dss0(c0,c1,keep1,keep2)">nt_dss0</a>(C0,C1,[],0);
+0052         fromdss=pinv(todss);
+0053         
+0054         <span class="comment">% denoising matrix for this trial</span>
+0055         D{iTrial}=todss(:,2:end)*fromdss(2:<span class="keyword">end</span>,:);
+0056         
+0057         <span class="comment">% is this trial the most excentric?</span>
+0058         <span class="keyword">if</span> pwr1(1)/pwr0(1)&gt;best_score
+0059             iBest=iTrial;
+0060             best_score=pwr1(1)/pwr0(1);
+0061         <span class="keyword">end</span>
+0062         scores(iPass,iTrial)=pwr1(1)/pwr0(1);
+0063     <span class="keyword">end</span>
+0064     
+0065     <span class="comment">% remove most excentric component of most excentric trials</span>
+0066     <span class="keyword">if</span> best_score&gt;thresh
+0067         X{iBest}=<a href="nt_mmat.html" class="code" title="function y=nt_mmat(x,m)">nt_mmat</a>(X{iBest},D{iBest});
+0068     <span class="keyword">else</span>
+0069         <span class="keyword">break</span>;
+0070     <span class="keyword">end</span>
+0071 
+0072     figure(10); clf; <a href="nt_imagescc.html" class="code" title="function nt_imagescc(C)">nt_imagescc</a>(scores); colorbar;
+0073     <span class="comment">%disp(nt_wpwr(X)/original_power);</span>
+0074 <span class="keyword">end</span>
+0075     
+0076 Y=X;</pre></div>
+<hr><address>Generated on Fri 24-Sep-2021 09:54:31 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>
